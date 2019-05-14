@@ -17,8 +17,6 @@ type HTTPClient struct {
 	Annotators []string
 	Username   string
 	Password   string
-
-	ctx context.Context
 }
 
 // NewHTTPClient initializes HttpClient and returns it.
@@ -28,11 +26,10 @@ func NewHTTPClient(ctx context.Context, endpoint string) *HTTPClient {
 	}
 	return &HTTPClient{
 		Endpoint: endpoint,
-		ctx:      ctx,
 	}
 }
 
-func (c *HTTPClient) buildRequest(text string) (*http.Request, error) {
+func (c *HTTPClient) buildRequest(ctx context.Context, text string) (*http.Request, error) {
 	u, err := url.Parse(c.Endpoint)
 	if err != nil {
 		return nil, err
@@ -47,7 +44,7 @@ func (c *HTTPClient) buildRequest(text string) (*http.Request, error) {
 		params["annotators"] = strings.Join(c.Annotators, ",")
 	}
 
-	deadline, ok := c.ctx.Deadline()
+	deadline, ok := ctx.Deadline()
 	if ok {
 		d := deadline.Sub(time.Now()).Seconds()
 		params["timeout"] = d / float64(time.Millisecond)
@@ -78,13 +75,13 @@ func (c *HTTPClient) buildRequest(text string) (*http.Request, error) {
 }
 
 // Run marshals Connector interface implementation.
-func (c *HTTPClient) Run(text string) (response Response, err error) {
-	req, err := c.buildRequest(text)
+func (c *HTTPClient) Run(ctx context.Context, text string) (response Response, err error) {
+	req, err := c.buildRequest(ctx, text)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(c.ctx)
+	req = req.WithContext(ctx)
 
 	tr := &http.Transport{}
 	cli := &http.Client{Transport: tr}

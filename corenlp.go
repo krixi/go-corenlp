@@ -1,16 +1,35 @@
 package corenlp
 
 import (
+	"context"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 
-	"github.com/hironobu-s/go-corenlp/connector"
-	"github.com/hironobu-s/go-corenlp/document"
+	"github.com/krixi/go-corenlp/document"
 )
 
+// Response is returned by some structs which implements Connector interface.
+type Response io.ReadCloser
+
+// Connector means the something to communicate with Stanford CoreNLP.
+type Connector interface {
+	Run(context.Context, string) (Response, error)
+}
+
+type CoreNLP struct {
+	con Connector
+}
+
+func NewCoreNLP(c Connector) *CoreNLP {
+	return &CoreNLP{
+		con: c,
+	}
+}
+
 // Annotate annotate the text using a connector provided.
-func Annotate(p connector.Connector, text string) (root *document.Document, err error) {
-	response, err := p.Run(text)
+func (c *CoreNLP) Annotate(ctx context.Context, text string) (root *document.Document, err error) {
+	response, err := c.con.Run(ctx, text)
 	if err != nil {
 		return nil, err
 	}

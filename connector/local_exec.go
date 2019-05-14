@@ -23,15 +23,10 @@ type LocalExec struct {
 	Props       string
 	Annotators  []string
 	CoreNlpArgs []string
-
-	ctx context.Context
 }
 
 // NewLocalExec returns a pointer of LocalExec
-func NewLocalExec(ctx context.Context) *LocalExec {
-	if ctx == nil {
-		ctx = context.Background()
-	}
+func NewLocalExec() *LocalExec {
 	return &LocalExec{
 		JavaCmd:   "java",
 		JavaArgs:  []string{},
@@ -42,13 +37,11 @@ func NewLocalExec(ctx context.Context) *LocalExec {
 		Props:       "",
 		Annotators:  []string{},
 		CoreNlpArgs: []string{},
-
-		ctx: ctx,
 	}
 }
 
 // Run marshals Connector interface implementation.
-func (c *LocalExec) Run(text string) (response Response, err error) {
+func (c *LocalExec) Run(ctx context.Context, text string) (response Response, err error) {
 	// create tmp file which write the input text
 	tmp, err := ioutil.TempFile("", "go-corenlp")
 	if err != nil {
@@ -98,7 +91,7 @@ func (c *LocalExec) Run(text string) (response Response, err error) {
 	)
 
 	// execute command
-	cmd := exec.CommandContext(c.ctx, c.JavaCmd, args...)
+	cmd := exec.CommandContext(ctx, c.JavaCmd, args...)
 	logrus.Debugf("Run command [%s]", strings.Join(cmd.Args, " "))
 
 	stdout := &bytes.Buffer{}
