@@ -17,18 +17,20 @@ type Connector interface {
 	Run(context.Context, string) (Response, error)
 }
 
-type CoreNLP struct {
+// Client is the type used to interact with the NLP server at the high level.
+type Client struct {
 	con Connector
 }
 
-func NewCoreNLP(c Connector) *CoreNLP {
-	return &CoreNLP{
+// NewClient creates a new instance of the NLP client. Pass it an instance of the corenlp.HTTPClient or corenlp.LocalExec objects.
+func NewClient(c Connector) *Client {
+	return &Client{
 		con: c,
 	}
 }
 
 // Annotate annotate the text using a connector provided.
-func (c *CoreNLP) Annotate(ctx context.Context, text string) (root *document.Document, err error) {
+func (c *Client) Annotate(ctx context.Context, text string) (root *document.Document, err error) {
 	response, err := c.con.Run(ctx, text)
 	if err != nil {
 		return nil, err

@@ -20,10 +20,7 @@ type HTTPClient struct {
 }
 
 // NewHTTPClient initializes HttpClient and returns it.
-func NewHTTPClient(ctx context.Context, endpoint string) *HTTPClient {
-	if ctx == nil {
-		ctx = context.Background()
-	}
+func NewHTTPClient(endpoint string) *HTTPClient {
 	return &HTTPClient{
 		Endpoint: endpoint,
 	}
