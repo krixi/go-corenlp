@@ -7,7 +7,7 @@
 Download and install it:
 
 ```shell
-go get github.com/hironobu-s/go-corenlp
+go get github.com/krixi/go-corenlp
 ```
 
 Make sure that you can run Stanford CoreNLP on [command line](https://stanfordnlp.github.io/CoreNLP/cmdline.html):
@@ -15,6 +15,12 @@ Make sure that you can run Stanford CoreNLP on [command line](https://stanfordnl
 ```shell
 java -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLP -h
 ```
+
+You can also run Stanford CoreNLP in a docker container:
+```shell
+docker-compose up -d
+```
+Make sure you increase the memory available to docker containers to at least 6gb. 
 
 ## Usage
 
@@ -24,10 +30,10 @@ A simple code for using `go-corenlp` is:
 package main
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/hironobu-s/go-corenlp" // exposes "corenlp"
-	"github.com/hironobu-s/go-corenlp/connector"
+	"github.com/krixi/go-corenlp"
 )
 
 func main() {
@@ -35,12 +41,13 @@ func main() {
 	text := `President Xi Jinping of Chaina, on his first state visit to the United States, showed off his familiarity with American history and pop culture on Tuesday night.`
 
 	// LocalExec connector is responsible to run Stanford CoreNLP process.
-	c := connector.NewLocalExec(nil)
+	c := corenlp.NewLocalExec()
 	c.ClassPath = "./corenlp/*" // set Java class path
 	c.Annotators = []string{"tokenize", "ssplit", "pos"}
+	client := corenlp.NewClient(c)
 
 	// Annotate text
-	doc, err := corenlp.Annotate(c, text)
+	doc, err := corenlp.Annotate(context.Background(), text)
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +72,8 @@ President(NNP) Xi(NN) Jinping(NN) of(IN) Chaina(NNP),(,) on(IN) his(PRP$) first(
 
 ```go
 // Annotate text
-doc, err := corenlp.Annotate(connector.NewLocalExec(nil), text)
+c := corenlp.NewClient(corenlp.NewLocalExec())
+doc, err := corenlp.Annotate(context.Background(), text)
 if err != nil {
 	panic(err)
 }
@@ -96,11 +104,12 @@ for _, dep := range sentence.Dependencies {
 `go-corenlp` supports a timeout by using `context.Context`.
 
 ```go
+c := corenlp.NewClient(corenlp.NewLocalExec())
+
 ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 defer cancel()
 
-c := connector.NewLocalExec(ctx)
-doc, err := corenlp.Annotate(c, text)
+doc, err := c.Annotate(ctx, text)
 ```
 
 ### Connect to CoreNLP server
@@ -108,14 +117,15 @@ doc, err := corenlp.Annotate(c, text)
 To connect [CoreNLP server](https://stanfordnlp.github.io/CoreNLP/corenlp-server.html), You may use `HTTPClient provider`.
 
 ```go
+httpClient := corenlp.NewHTTPClient("http://127.0.0.1:9000/")
+httpClient.Username = "username"
+httpClient.Password = "password"
+c := corenlp.NewClient(httpClient)
+
 ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 defer cancel()
 
-c := connector.NewHTTPClient(ctx, "http://127.0.0.1:9000/")
-c.Username = "username"
-c.Password = "password"
-
-doc, err := corenlp.Annotate(c, text)
+doc, err := c.Annotate(ctx, text)
 ```
 
 ### Parse json output 

@@ -64,6 +64,17 @@ func TestCoreNLP(t *testing.T) {
 				assert.NotEmpty(t, sentence.EntityMentions)
 			},
 		},
+		{
+			description: "Corefs are returned",
+			request:     "President Xi Jinping of Chaina, on his first state visit to the United States, showed off his familiarity with American history and pop culture on Tuesday night.",
+			test: func(ctx context.Context, req string, c corenlp.Client) {
+
+				root, err := c.Annotate(ctx, req)
+				assert.NoError(t, err)
+				assert.NotNil(t, root)
+				assert.NotEmpty(t, root.Corefs)
+			},
+		},
 	}
 
 	// Initialize the test client.

@@ -1,5 +1,6 @@
 package document
 
+// Tokens is a list of token objects
 type Tokens []Token
 
 // Index returns Token with an index of the argument.

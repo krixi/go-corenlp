@@ -1,5 +1,6 @@
 package document
 
+// EntityMention contains records for the entity annotator: https://stanfordnlp.github.io/CoreNLP/entitymentions.html
 type EntityMention struct {
 	DocTokenBegin        int    `json:"docTokenBegin"`
 	DocTokenEnd          int    `json:"docTokenEnd"`
