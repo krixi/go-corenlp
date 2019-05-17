@@ -9,7 +9,7 @@ fmt: retool
 
 test:
 	docker-compose up -d
-	go test -race ./...
+	go test -race -v ./...
 .PHONY: test
 
 
